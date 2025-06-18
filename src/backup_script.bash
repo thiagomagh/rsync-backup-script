@@ -150,17 +150,18 @@ runBackup() {
     # Caminho simbólico que sempre apontará para o backup mais recente.
     LATEST_LINK="${BACKUP_DIR}/latest"
 
-    # Confirmação final antes de executar o Rsync.
-    printf "Deseja iniciar o backup de '${CYAN}%s${RESET}' para '${CYAN}%s${RESET}'?\n" "$SOURCE_DIR" "$BACKUP_DIR"
-
-    printf "Digite [${CYAN}1${RESET}] para confirmar ou qualquer outra tecla para cancelar: "
-    read -r option
-    clear
-
-    if [[ "$option" != "1" ]]; then
-        printf "${CYAN}*${RESET} Operação cancelada pelo usuário.\n\n"
-        main
-        return
+    # Se veio com args, INTERACTIVE=false
+    if [[ "${INTERACTIVE:-true}" == "true" ]]; then
+        # só faz essa parte em modo interativo
+        printf "Deseja iniciar o backup de '%s' para '%s'?\n" "$SOURCE_DIR" "$BACKUP_DIR"
+        printf "Digite [1] para confirmar ou qualquer outra tecla para cancelar: "
+        read -r option
+        clear
+        if [[ "$option" != "1" ]]; then
+            printf "Operação cancelada.\n\n"
+            main
+            return
+        fi
     fi
 
     printf "${BLUE}Iniciando backup...${RESET}\n\n"
@@ -188,13 +189,17 @@ runBackup() {
     # Mensagem de finalização do backup.
     printf "\n${GREEN}* Backup finalizado sem erros${RESET}.\n\n"
     printf "O backup está localizado no diretório: ${CYAN}%s${RESET}\n\n" "${BACKUP_PATH}"
-    # Aguarda o usuário pressionar [Enter] antes de continuar a execução.
-    printf "Pressione a tecla [Enter] para prosseguir. "
-    read -r
-    clear
-    # Direciona o usuário para o menu.
-    main
-    return
+
+    if [[ "${INTERACTIVE:-true}" == "true" ]]; then
+        # Aguarda o usuário pressionar [Enter] antes de continuar a execução.
+        printf "Pressione [Enter] para continuar."
+        read -r
+        clear
+        # Direciona o usuário para o menu.
+        main
+    else
+        exit 0
+    fi
 }
 # Ponto de inicialização do script.
 main() {
@@ -205,11 +210,12 @@ main() {
 
 # Se vierem exatamente 2 parâmetros, usá‑los e pular menu:
 if [[ $# -eq 2 ]]; then
+    INTERACTIVE=false
     SOURCE_DIR="$1"
     DEST_DIR="$2"
     runBackup
     exit 0
+else
+    INTERACTIVE=true
+    main
 fi
-
-# Senão, continuar em modo interativo:
-main
