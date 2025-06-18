@@ -1,4 +1,4 @@
-# File Backup script - Garzuze & Magalhães
+# File Backup script - L. Garzuze, T. Magalhães & Y. Cys
 ## Systems' administration final project
 **DESCRIÇÃO DO PROJETO:**
 
