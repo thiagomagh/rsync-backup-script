@@ -15,16 +15,12 @@ set -o pipefail
 
 # Define o diretório de origem dos arquivos a serem salvos (pasta home do usuário).
 readonly SOURCE_DIR="${HOME}"
-
 # Define onde os backups serão armazenados (neste caso, em /mnt/data/backups).
 readonly BACKUP_DIR="/mnt/data/backups"
-
 # Captura data e hora atuais no formato 'YYYY-MM-DD_HH:MM:SS'.
 readonly DATETIME="$(date '+%Y-%m-%d_%H:%M:%S')"
-
 # Monta o caminho completo do novo backup usando data e hora.
 readonly BACKUP_PATH="${BACKUP_DIR}/${DATETIME}"
-
 # Caminho simbólico que sempre apontará para o backup mais recente.
 readonly LATEST_LINK="${BACKUP_DIR}/latest"
 
@@ -46,6 +42,5 @@ rsync -av --delete \
 
 # Remove, sem gerar erro se não existir, o link simbólico 'latest'
 rm -rf "${LATEST_LINK}"
-
 # Cria um novo link simbólico 'latest' apontando para o backup recém-criado
 ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
