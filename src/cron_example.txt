@@ -1,0 +1,1 @@
+* * * * * /caminho/para/backup_script.bash /home/user/Documents /media/hd_ext/backups/
