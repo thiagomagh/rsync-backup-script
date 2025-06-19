@@ -1,6 +1,6 @@
 # Script de Backup com Rsync: trabalho final de administração de sistemas
 
-*Autores: Lucas Garzuze Cordeiro, Thiago Magalhães e Yohan Brancalhão Cys*
+*Autores: Lucas Garzuze Cordeiro, Thiago Cesar Magalhães e Yohan Brancalhão Cys*
 
 *Licença: MIT*
 
@@ -171,9 +171,11 @@ Este projeto está licenciado sob a **MIT License**. Veja o arquivo [LICENSE](LI
 
 1. Script usado como referência: 
 - https://linuxconfig.org/how-to-create-incremental-backups-using-rsync-on-linux
-2. Materiais de referência na configuração do Rsync.
+2. Materiais de referência na configuração do Rsync:
 - https://www.hostinger.com/br/tutoriais/comando-rsync-linux
 - https://wiki.archlinux.org/title/Rsync
 - https://www.digitalocean.com/community/tutorials/how-to-use-rsync-to-sync-local-and-remote-directories-pt
 3. Desenvolvimento do script e lógica de execução:
 - https://aurelio.net/shell/canivete/
+4. Personalização de cores e formatação da saída do terminal:
+- https://wiki.archlinux.org/title/Bash/Prompt_customization
