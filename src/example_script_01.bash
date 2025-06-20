@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# -------------------------------------------------------
-# Use este script como referência para o `backup.bash`.
-# -------------------------------------------------------
+# --------------------------------------------------------------
+# Use este script como referência para o `backup_script.bash`.
+# --------------------------------------------------------------
 
 # Script para realizar backups incrementais usando o rsync.
 
