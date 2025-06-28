@@ -1,4 +1,4 @@
-# Script de Backup com Rsync: trabalho final de administração de sistemas
+# Script de Backup com Rsync: Trabalho Final de Administração de Sistemas
 
 *Autores: Lucas Garzuze Cordeiro, Thiago Cesar Magalhães e Yohan Brancalhão Cys*
 
