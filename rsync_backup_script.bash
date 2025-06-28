@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# ----------------------------------------------
-# Use `example_script_01` como referência.
-# ----------------------------------------------
-
 # ======================================================
 # Autores: Lucas Garzuze, Thiago Magalhães e Yohan Cys.
 # Licença: MIT.
@@ -24,13 +20,12 @@ CYAN='\e[1;36m'
 WHITE='\e[1;37m'
 # Ex.: ${BLUE}Olá, Mundo!${RESET}
 
-# Faz o script sair imediatamente se qualquer comando retornar erro (código != 0).
+# Faz o script sair imediatamente se qualquer comando retornar erro
 set -o errexit
-# Faz o script sair se tentar usar variável não definida.
+# Faz o script sair se tentar usar variável não definida
 set -o nounset
-# Faz o script considerar erro em pipelines quando qualquer parte falhar.
-# set -o pipefail
-set -euo pipefail
+# Faz o script considerar erro em pipelines quando qualquer parte falhar
+set -o pipefail
 
 menu() {
     option=""
@@ -64,7 +59,9 @@ menu() {
 }
 
 runBackup() {
+    # Nome do subdiretório de backup.
     BACKUP_SUBDIR_NAME="backups"
+
     # Se SOURCE_DIR já estiver definido (via args), pula leitura interativa:
     if [[ -z "${SOURCE_DIR:-}" ]]; then
         # Seleção do diretório de origem.
@@ -84,6 +81,8 @@ runBackup() {
 
             # Verifica se foi digitado `2` para retornar ao main.
             if [[ "${SOURCE_DIR}" == "2" ]]; then
+                # limpa escolhas anteriores
+                unset SOURCE_DIR DEST_DIR
                 main
                 return
             fi
@@ -115,6 +114,8 @@ runBackup() {
 
             # Verifica se foi digitado `2` para alterar diretório de origem.
             if [[ "${DEST_DIR}" == "2" ]]; then
+                # limpa escolhas anteriores
+                unset SOURCE_DIR DEST_DIR
                 runBackup
                 return
             fi
@@ -123,21 +124,24 @@ runBackup() {
             # O '%/' remove a barra final, se houver, para evitar '//'
             BACKUP_DIR="${DEST_DIR%/}/${BACKUP_SUBDIR_NAME}"
 
-            # Tenta criar o diretório de destino, incluindo seu subdiretório. O '-p' evita erros se já existir.
-            mkdir -p "${BACKUP_DIR}"
-
-            # Verifica se o diretório existe e se é possível escrever nele.
-            if [[ -d "${BACKUP_DIR}" && -w "${BACKUP_DIR}" ]]; then
+            # Tenta criar o diretório de destino, incluindo seu subdiretório. O '-p' evita erros se já existir.            
+            # Se o comando 'mkdir' for bem-sucedido, ele entra no 'then'. Se falhar, ele entra no 'else'.
+            # Isso evita que o 'set -o errexit' pare o script.
+            if mkdir -p "${BACKUP_DIR}" 2> /dev/null; then
+                # Se o diretório foi criado com sucesso, significa que o caminho é válido
+                # e há permissão de escrita.
                 printf "${GREEN}*${RESET} O backup será salvo em: ${GREEN}%s${RESET}.\n\n" "$BACKUP_DIR"
-
                 # Encerra o laço atual (diretório de destino).
                 break
             else
                 printf "${YELLOW}*${RESET} O caminho de destino é inválido ou não há permissão de escrita.\n"
                 printf "${YELLOW}*${RESET} Foi digitado: ${YELLOW}%s${RESET}.\n\n" "$DEST_DIR"
+                # Faz o loop pedir o caminho novamente.
+                continue
             fi
         done
     fi
+
     BACKUP_DIR="${DEST_DIR%/}/${BACKUP_SUBDIR_NAME}"
     mkdir -p "${BACKUP_DIR}"
 
@@ -153,12 +157,15 @@ runBackup() {
     # Se veio com args, INTERACTIVE=false
     if [[ "${INTERACTIVE:-true}" == "true" ]]; then
         # só faz essa parte em modo interativo
-        printf "Deseja iniciar o backup de '%s' para '%s'?\n" "$SOURCE_DIR" "$BACKUP_DIR"
-        printf "Digite [1] para confirmar ou qualquer outra tecla para cancelar: "
+        printf "Deseja iniciar o backup de ${CYAN}%s${RESET} para ${CYAN}%s${RESET}?\n" "$SOURCE_DIR" "$BACKUP_DIR"
+        printf "Digite [${CYAN}1${RESET}] para confirmar ou qualquer outra tecla para cancelar: "
         read -r option
         clear
+
         if [[ "$option" != "1" ]]; then
-            printf "Operação cancelada.\n\n"
+            printf "${CYAN}*${RESET} Operação cancelada pelo usuário.\n\n"
+            # limpa escolhas anteriores
+            unset SOURCE_DIR DEST_DIR
             main
             return
         fi
@@ -196,11 +203,14 @@ runBackup() {
         read -r
         clear
         # Direciona o usuário para o menu.
+        # limpa escolhas anteriores
+        unset SOURCE_DIR DEST_DIR
         main
     else
         exit 0
     fi
 }
+
 # Ponto de inicialização do script.
 main() {
     printf "${BLUE}Autores: L. Garzuze e T. Magalhães e Yohan Cys.${RESET}\n"
