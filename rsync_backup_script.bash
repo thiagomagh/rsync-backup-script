@@ -120,24 +120,20 @@ runBackup() {
                 return
             fi
 
-            # Combina o caminho do usuário com o nome da subpasta automática.
-            # O '%/' remove a barra final, se houver, para evitar '//'
-            BACKUP_DIR="${DEST_DIR%/}/${BACKUP_SUBDIR_NAME}"
+            # Verifica se o diretório existe e se é possível escrever nele.
+            if [[ -d "${DEST_DIR}" && -w "${DEST_DIR}" ]]; then
+                # Combina o caminho do usuário com o nome da subpasta automática.
+                # O '%/' remove a barra final, se houver, para evitar '//'
+                BACKUP_DIR="${DEST_DIR%/}/${BACKUP_SUBDIR_NAME}"
 
-            # Tenta criar o diretório de destino, incluindo seu subdiretório. O '-p' evita erros se já existir.            
-            # Se o comando 'mkdir' for bem-sucedido, ele entra no 'then'. Se falhar, ele entra no 'else'.
-            # Isso evita que o 'set -o errexit' pare o script.
-            if mkdir -p "${BACKUP_DIR}" 2> /dev/null; then
-                # Se o diretório foi criado com sucesso, significa que o caminho é válido
-                # e há permissão de escrita.
+                # Tenta criar o diretório de destino, incluindo seu subdiretório. O '-p' evita erros se já existir.
+                mkdir -p "${BACKUP_DIR}"            
                 printf "${GREEN}*${RESET} O backup será salvo em: ${GREEN}%s${RESET}.\n\n" "$BACKUP_DIR"
                 # Encerra o laço atual (diretório de destino).
                 break
             else
                 printf "${YELLOW}*${RESET} O caminho de destino é inválido ou não há permissão de escrita.\n"
                 printf "${YELLOW}*${RESET} Foi digitado: ${YELLOW}%s${RESET}.\n\n" "$DEST_DIR"
-                # Faz o loop pedir o caminho novamente.
-                continue
             fi
         done
     fi
