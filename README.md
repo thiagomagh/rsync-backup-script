@@ -30,7 +30,7 @@ Este script automatiza a criação de **backups incrementais** usando o `rsync`.
 - Gera pastas de backup nomeadas por data e hora (`YYYY-MM-DD_HH‑MM‑SS`).
 - Mantém um link simbólico `latest` apontando para o backup mais recente.
 - Suporta **modo interativo** (menu + prompts) ou **modo não‑interativo** (passando origem e destino como argumentos).
-- Possibilita agendamento utilizando o `cron` através do modo não-interativo 
+- Possibilita agendamento utilizando o `cron` através do modo interativo e não-interativo.
 - Formatação colorida para facilitar a leitura no terminal.
 
 ---
@@ -70,7 +70,9 @@ Basta executar o script sem argumentos. Ele exibirá um menu:
 2. Informe o **caminho de origem**.
 3. Informe o **caminho de destino** (o subdiretório `backups` será criado automaticamente).
 4. Confirme a execução.
-5. Acompanhe o progresso via `rsync` e pressione **Enter** ao final para voltar ao menu.
+5. Acompanhe o progresso via `rsync`.
+6. Escolha ou não agendamento via cron.
+7. Pressione **Enter** ao final para voltar ao menu.
 
 ### Modo não‑interativo (via argumentos)
 
@@ -96,7 +98,9 @@ O script:
 
 ### Usando cron
 
-Edite seu crontab com `crontab -e` e adicione, por exemplo, para rodar todo dia às 2 h:
+- Modo interativo: Digite **1** quando o script perguntar se deseja agendar a execução. Em seguida, selecione as opções de frequências disponíveis para agendamento.
+
+- Modo não-interativo: Edite seu crontab com `crontab -e` e adicione, por exemplo, para rodar todo dia às 2 h:
 
 ```cron
 0 2 * * * /caminho/para/backup_script.bash /home/usuario/Documentos /media/hd_externo/backups
@@ -150,7 +154,10 @@ rsync -ah --info=progress2 --delete \
 
    - Flags: `-a` (archive), `-h` (human), `--info=progress2`, `--delete`, `--link-dest`.
 5. **Atualização do link** `latest`.
-6. **Finalização**
+6. **Configuração ou não de agendamento via cron.**
+
+   - Seleção de frequências disponíveis para agendamento.
+7. **Finalização**
 
    - Modo interativo → pausa e volta ao menu.
    - Modo não‑interativo → encerra o script.

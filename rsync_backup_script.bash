@@ -30,7 +30,7 @@ set -o pipefail
 menu() {
     option=""
     printf "== Menu ==\n"
-    printf "1. Iniciar backup\n"
+    printf "1. Iniciar e agendar backup\n"
     printf "2. Sair\n\n"
     printf "Digite uma opção: "
     read -r option
@@ -64,6 +64,10 @@ runBackup() {
 
     # Se SOURCE_DIR já estiver definido (via args), pula leitura interativa:
     if [[ -z "${SOURCE_DIR:-}" ]]; then
+        SOURCE_DIR=""
+        DEST_DIR=""
+        option=""
+
         # Seleção do diretório de origem.
         while true; do
             printf "[${CYAN}ORIGEM${RESET}] Informe o caminho completo (desde a raiz) do diretório desejado para backup.\n"
@@ -101,7 +105,7 @@ runBackup() {
         # Seleção do diretório de destino.
         while true; do
             printf "[${CYAN}DESTINO${RESET}] Informe o caminho completo (desde a raiz) do diretório de armazenamento do backup.\n"
-            printf "Ex.: ${CYAN}/media/hd_externo/backups${RESET}.\n\n"
+            printf "Ex.: ${CYAN}/media/hd_externo/${RESET}.\n\n"
             printf "Digite o caminho de destino ou [${CYAN}2${RESET}] para alterar o diretório de ORIGEM: "
             read -r DEST_DIR
             clear
@@ -190,10 +194,11 @@ runBackup() {
     ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
 
     # Mensagem de finalização do backup.
-    printf "\n${GREEN}* Backup finalizado sem erros${RESET}.\n\n"
+    printf "\n${GREEN}* Backup finalizado sem erros.${RESET}\n\n"
     printf "O backup está localizado no diretório: ${CYAN}%s${RESET}\n\n" "${BACKUP_PATH}"
 
     if [[ "${INTERACTIVE:-true}" == "true" ]]; then
+        schedule_cron
         # Aguarda o usuário pressionar [Enter] antes de continuar a execução.
         printf "Pressione [Enter] para continuar."
         read -r
@@ -207,6 +212,70 @@ runBackup() {
     fi
 }
 
+# Agendamento via cron.
+schedule_cron() {
+    option=""
+    frequency_option=""
+    printf "Deseja agendar esse backup para execução automática via cron?\n"
+    printf "Digite [${CYAN}1${RESET}] para confirmar ou qualquer outra tecla para cancelar: "
+    read -r option
+    clear
+
+    if [[ "$option" != "1" ]]; then
+        printf "${CYAN}*${RESET} Agendamento via cron não configurado.\n\n"
+        return
+    fi
+
+    while true; do
+        printf "Frequências disponíveis para agendamento:\n"
+        printf "1. A cada hora\n"
+        printf "2. Diariamente\n"
+        printf "3. Semanalmente\n"
+        printf "4. Mensalmente\n"
+        printf "5. Cancelar\n\n"
+        printf "Digite uma frequência: "
+        read -r frequency_option
+
+        case $frequency_option in
+            1) cron_schedule="0 * * * *"; break;; # Minuto 0 de toda hora.
+            2) cron_schedule="0 0 * * *"; break;; # Todos os dias às 00:00.
+            3) cron_schedule="0 0 * * 0"; break;; # Todo domingo às 00:00.
+            4) cron_schedule="0 0 1 * *"; break;; # Todo dia 1 de cada mês às 00:00.
+            5) clear; printf "${CYAN}*${RESET} Agendamento cancelado.\n\n"; return;;
+            "") 
+                clear; 
+                printf "${YELLOW}*${RESET} Nenhuma opção foi digitada. Tente novamente.\n"
+                ;;
+            *) 
+                clear; 
+                printf "${YELLOW}*${RESET} Foi digitado: ${YELLOW}%s${RESET}. Opção inválida.\n" "$frequency_option"
+                ;;
+        esac
+    done
+
+    # --- Definições de agendamento do cron ---
+    # Caminho absoluto do script para evitar problemas com ambientes do cron.
+    script_path="$(realpath "$0")"
+    # Cria uma linha de cron formatada.
+    cron_entry="$cron_schedule bash \"$script_path\" \"$SOURCE_DIR\" \"$DEST_DIR\" # backup_auto"
+
+    # Adiciona ao crontab do usuário, ao mesmo tempo que evita duplicação.
+    # Crontab configurado desse jeito para garantir que:
+    # 1. Mesmo que não exista nenhum agendamento prévio, o comando crontab -l não pare o script (|| true).
+    # 2. Remove qualquer linha antiga marcada com “# backup_auto” antes de inserir alguma nova, evitando duplicações.
+    # 3. Não trava esperando entrada no grep nem aborta em caso de erro, graças ao “|| true” após o grep.
+    (
+        ( crontab -l 2>/dev/null || true ) \
+            | grep -v '# backup_auto' \
+            || true
+            printf "%s\n" "$cron_entry"
+    ) | crontab -
+
+
+    clear
+    printf "${GREEN}* Backup agendado com sucesso.${RESET}\n\n"
+}
+
 # Ponto de inicialização do script.
 main() {
     printf "${BLUE}Autores: L. Garzuze e T. Magalhães e Yohan Cys.${RESET}\n"
@@ -214,8 +283,18 @@ main() {
     menu
 }
 
-# Se vierem exatamente 2 parâmetros, usá‑los e pular menu:
+# Se vierem exatamente 2 parâmetros, usá-los e pular menu:
 if [[ $# -eq 2 ]]; then
+    if [[ ! -d "$1" || ! -r "$1" ]]; then
+        echo "Erro: Diretório de origem inválido ou sem permissão de leitura."
+        exit 1
+    fi
+
+    if [[ ! -d "$2" || ! -w "$2" ]]; then
+        echo "Erro: Diretório de destino inválido ou sem permissão de escrita."
+        exit 1
+    fi
+
     INTERACTIVE=false
     SOURCE_DIR="$1"
     DEST_DIR="$2"
