@@ -1,4 +1,4 @@
-# Script de Backup com Rsync: Trabalho Final de Administração de Sistemas
+# Script de backup com Rsync: Projeto final de Administração de Sistemas da UFPR
 
 *Autores: Lucas Garzuze Cordeiro, Thiago Cesar Magalhães e Yohan Brancalhão Cys*
 
