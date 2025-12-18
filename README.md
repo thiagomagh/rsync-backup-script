@@ -1,4 +1,6 @@
-# Script de backup com Rsync: Projeto final de Administração de Sistemas da UFPR
+# Script de backup com Rsync
+
+Projeto final da disciplina de Administração de Sistemas, TADS - UFPR.
 
 *Autores: Lucas Garzuze Cordeiro, Thiago Cesar Magalhães e Yohan Brancalhão Cys*
 
